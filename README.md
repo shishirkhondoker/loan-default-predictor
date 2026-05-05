@@ -28,7 +28,7 @@ This project includes:
 
 This project uses the Lending Club accepted loans dataset.
 
-Place the dataset file here: https://www.kaggle.com/datasets/wordsforthewise/lending-club
+Dataset file here: https://www.kaggle.com/datasets/wordsforthewise/lending-club
 
 ```text
 data/raw/accepted_2007_to_2018Q4.csv
