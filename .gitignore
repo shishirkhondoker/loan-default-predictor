@@ -3,7 +3,7 @@ __pycache__/
 .ipynb_checkpoints/
 
 # Large raw dataset should not be pushed to GitHub
-data/raw/
+data/raw/*.csv
 *.pyc
 
 .DS_Store
