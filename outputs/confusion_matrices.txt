@@ -1,0 +1,15 @@
+Model 1 confusion matrix at 0.5:
+[[4967 2835]
+ [ 785 1413]]
+
+Model 1 confusion matrix at best F1 threshold:
+[[5709 2093]
+ [ 984 1214]]
+
+Model 2 confusion matrix at 0.5:
+[[4966 2836]
+ [ 785 1413]]
+
+Model 2 confusion matrix at best F1 threshold:
+[[5634 2168]
+ [ 959 1239]]

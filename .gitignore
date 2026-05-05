@@ -1,0 +1,10 @@
+venv/
+__pycache__/
+.ipynb_checkpoints/
+
+# Large raw dataset should not be pushed to GitHub
+data/raw/
+*.pyc
+
+.DS_Store
+.env

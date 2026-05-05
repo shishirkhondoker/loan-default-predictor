@@ -1,0 +1,3 @@
+Time-based split confusion matrix at 0.5 threshold:
+[[4466 3157]
+ [ 759 1618]]

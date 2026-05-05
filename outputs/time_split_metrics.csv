@@ -1,0 +1,2 @@
+split_type,model,auc,precision_top10,recall_top10,train_start,train_end,test_start,test_end,train_default_rate,test_default_rate
+time_based,static_plus_behavioral,0.6800503712195303,0.428,0.1800588977702987,2007-06-01,2017-09-01,2017-09-01,2018-12-01,0.215275,0.2377
