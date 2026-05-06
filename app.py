@@ -614,7 +614,7 @@ with st.sidebar:
             <div style='display: flex; flex-direction: column; gap: 12px; position: relative; z-index: 1;'>
                 <div style='display: flex; justify-content: space-between; align-items: center;'>
                     <span style='color: #5eead4; font-size: 12px; font-weight: 600;'>Model Type</span>
-                    <span style='color: #ffffff; font-size: 13px; font-weight: 700; background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 20px;'>Static + Behavioral</span>
+                    <span style='color: #ffffff; font-size: 13px; font-weight: 700; background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 20px;'>Random Forest</span>
                 </div>
                 <div style='display: flex; justify-content: space-between; align-items: center;'>
                     <span style='color: #5eead4; font-size: 12px; font-weight: 600;'>Sample Size</span>

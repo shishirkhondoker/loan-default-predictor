@@ -78,14 +78,16 @@ loan-default-predictor/
 ├── src/
 │   ├── config.py
 │   ├── data_prep.py
+│   ├── data_inspection.py
 │   ├── features.py
 │   ├── train.py
 │   ├── evaluate.py
 │   ├── time_split_check.py
 │   └── explain.py
 ├── models/
-│   ├── model_static.joblib
-│   └── model_behavioral.joblib
+│   ├── model_logistic.joblib
+│   ├── model_random_forest.joblib
+│   └── model_lightgbm.joblib
 ├── outputs/
 │   ├── metrics.csv
 │   ├── confusion_matrices.txt

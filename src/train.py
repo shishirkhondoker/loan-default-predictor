@@ -2,10 +2,12 @@ import pandas as pd
 import joblib
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
+import lightgbm as lgb
 
 from src.config import (
     RANDOM_SEED,
@@ -19,7 +21,8 @@ from src.features import add_behavioral_features
 from src.evaluate import evaluate_model
 
 
-def build_pipeline(features):
+# Function to build pipeline for models
+def build_pipeline(features, model_type="logistic"):
     numeric_features = [
         "loan_amnt", "installment", "annual_inc", "dti", "delinq_2yrs",
         "open_acc", "pub_rec", "revol_bal", "revol_util", "total_acc",
@@ -44,9 +47,17 @@ def build_pipeline(features):
         ("cat", categorical_pipe, categorical_features),
     ])
 
+    # Use the selected model based on model_type
+    if model_type == "random_forest":
+        model = RandomForestClassifier(n_estimators=100, max_depth=15, random_state=RANDOM_SEED)
+    elif model_type == "lightgbm":
+        model = lgb.LGBMClassifier(n_estimators=100, max_depth=15, learning_rate=0.1)
+    else:
+        model = LogisticRegression(max_iter=1000, class_weight="balanced")
+    
     return Pipeline([
         ("preprocess", preprocess),
-        ("model", LogisticRegression(max_iter=1000, class_weight="balanced")),
+        ("model", model),
     ])
 
 
@@ -54,9 +65,11 @@ def main():
     MODELS_DIR.mkdir(exist_ok=True)
     OUTPUTS_DIR.mkdir(exist_ok=True)
 
+    # Load and prepare the data
     df = load_and_prepare_data()
     df = add_behavioral_features(df)
 
+    # Target variable
     y = df["target"]
     train_idx, test_idx = train_test_split(
         df.index,
@@ -65,56 +78,74 @@ def main():
         random_state=RANDOM_SEED,
     )
 
+    # Split the data into training and test sets
     df_train = df.loc[train_idx].copy()
     df_test = df.loc[test_idx].copy()
     y_train = df_train["target"]
     y_test = df_test["target"]
 
+    # Feature sets
     model1_features = STATIC_FEATURES
     model2_features = STATIC_FEATURES + BEHAVIORAL_FEATURES
 
-    model1 = build_pipeline(model1_features)
-    model1.fit(df_train[model1_features], y_train)
-    results1 = evaluate_model(model1, df_test[model1_features], y_test)
+    # Logistic Regression Model (Static only)
+    model_logistic = build_pipeline(model1_features, model_type="logistic")
+    model_logistic.fit(df_train[model1_features], y_train)
+    results_logistic = evaluate_model(model_logistic, df_test[model1_features], y_test)
 
-    model2 = build_pipeline(model2_features)
-    model2.fit(df_train[model2_features], y_train)
-    results2 = evaluate_model(model2, df_test[model2_features], y_test)
+    # Random Forest Model (Static + Behavioral features)
+    model_rf = build_pipeline(model2_features, model_type="random_forest")
+    model_rf.fit(df_train[model2_features], y_train)
+    results_rf = evaluate_model(model_rf, df_test[model2_features], y_test)
 
-    joblib.dump(model1, MODELS_DIR / "model_static.joblib")
-    joblib.dump(model2, MODELS_DIR / "model_behavioral.joblib")
+    # LightGBM Model (Static + Behavioral features)
+    model_lgbm = build_pipeline(model2_features, model_type="lightgbm")
+    model_lgbm.fit(df_train[model2_features], y_train)
+    results_lgbm = evaluate_model(model_lgbm, df_test[model2_features], y_test)
 
+    # Save models
+    joblib.dump(model_logistic, MODELS_DIR / "model_logistic.joblib")
+    joblib.dump(model_rf, MODELS_DIR / "model_random_forest.joblib")
+    joblib.dump(model_lgbm, MODELS_DIR / "model_lightgbm.joblib")
+
+    # Save metrics
     metrics = pd.DataFrame([
         {
-            "model": "static_only",
-            "auc": results1["auc"],
-            "precision_top10": results1["precision_top10"],
-            "recall_top10": results1["recall_top10"],
+            "model": "logistic_regression",
+            "auc": results_logistic["auc"],
+            "precision_top10": results_logistic["precision_top10"],
+            "recall_top10": results_logistic["recall_top10"],
         },
         {
-            "model": "static_plus_behavioral",
-            "auc": results2["auc"],
-            "precision_top10": results2["precision_top10"],
-            "recall_top10": results2["recall_top10"],
+            "model": "random_forest",
+            "auc": results_rf["auc"],
+            "precision_top10": results_rf["precision_top10"],
+            "recall_top10": results_rf["recall_top10"],
+        },
+        {
+            "model": "lightgbm",
+            "auc": results_lgbm["auc"],
+            "precision_top10": results_lgbm["precision_top10"],
+            "recall_top10": results_lgbm["recall_top10"],
         },
     ])
     metrics.to_csv(OUTPUTS_DIR / "metrics.csv", index=False)
 
+    # Save predictions
     preds = df_test[["borrower_id", "loan_amnt", "annual_inc", "dti", "int_rate", "target"]].copy()
-    preds["predicted_risk"] = results2["probabilities"]
+    preds["predicted_risk"] = results_lgbm["probabilities"]
     preds = preds.sort_values("predicted_risk", ascending=False)
     preds.to_csv(OUTPUTS_DIR / "test_predictions.csv", index=False)
     preds.head(10).to_csv(OUTPUTS_DIR / "top_risk_borrowers.csv", index=False)
 
+    # Saving confusion matrices
     with open(OUTPUTS_DIR / "confusion_matrices.txt", "w") as f:
-        f.write("Model 1 confusion matrix at 0.5:\n")
-        f.write(str(results1["confusion_matrix_0_5"]))
-        f.write("\n\nModel 1 confusion matrix at best F1 threshold:\n")
-        f.write(str(results1["confusion_matrix_best_f1"]))
-        f.write("\n\nModel 2 confusion matrix at 0.5:\n")
-        f.write(str(results2["confusion_matrix_0_5"]))
-        f.write("\n\nModel 2 confusion matrix at best F1 threshold:\n")
-        f.write(str(results2["confusion_matrix_best_f1"]))
+        f.write("Logistic Regression confusion matrix at 0.5:\n")
+        f.write(str(results_logistic["confusion_matrix_0_5"]))
+        f.write("\n\nRandom Forest confusion matrix at 0.5:\n")
+        f.write(str(results_rf["confusion_matrix_0_5"]))
+        f.write("\n\nLightGBM confusion matrix at 0.5:\n")
+        f.write(str(results_lgbm["confusion_matrix_0_5"]))
 
     print(metrics)
     print("Training complete. Outputs saved.")

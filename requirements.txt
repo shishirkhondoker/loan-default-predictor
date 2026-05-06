@@ -5,3 +5,5 @@ matplotlib
 joblib
 streamlit
 shap
+lightgbm
+imbalanced-learn

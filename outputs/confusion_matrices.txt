@@ -1,15 +1,11 @@
-Model 1 confusion matrix at 0.5:
+Logistic Regression confusion matrix at 0.5:
 [[4967 2835]
  [ 785 1413]]
 
-Model 1 confusion matrix at best F1 threshold:
-[[5709 2093]
- [ 984 1214]]
+Random Forest confusion matrix at 0.5:
+[[7802    0]
+ [2197    1]]
 
-Model 2 confusion matrix at 0.5:
-[[4966 2836]
- [ 785 1413]]
-
-Model 2 confusion matrix at best F1 threshold:
-[[5634 2168]
- [ 959 1239]]
+LightGBM confusion matrix at 0.5:
+[[7672  130]
+ [2019  179]]
