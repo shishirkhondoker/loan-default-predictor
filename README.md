@@ -16,8 +16,9 @@ This project includes:
 - Target creation from `loan_status`
 - Safe application-time feature selection
 - Two machine learning models:
-  - Model 1: Static features only
-  - Model 2: Static + behavioral/derived features
+- Model 1: Logistic Regression
+- Model 2: Random Forest
+- Model 3: LightGBM
 - Model evaluation
 - Plain-English borrower explanations
 - A small Streamlit query interface
@@ -366,14 +367,15 @@ Both models were trained and evaluated on the same stratified 80/20 train-test s
 
 | Model               | AUC-ROC | Precision @ Top 10% | Recall @ Top 10% |
 | ------------------- | ------: | ------------------: | ---------------: |
-| Static only         |  0.6977 |               0.469 |           0.2134 |
-| Static + behavioral |  0.6979 |               0.472 |           0.2147 |
+| Logistic Regression |  0.6977 |               0.469 |           0.2134 |
+| Random Forest       |  0.6979 |               0.472 |           0.2147 |
+| LightGBM            |  0.7081 |               0.478 |           0.2174 |
 
 ---
 
 ## Confusion Matrices
 
-### Model 1: Static Only
+### Model 1: Logistic Regression
 
 At 0.5 threshold:
 
@@ -391,7 +393,7 @@ At best F1 threshold:
 
 ---
 
-### Model 2: Static + Behavioral
+### Model 2: Random Forest 
 
 At 0.5 threshold:
 
@@ -406,6 +408,10 @@ At best F1 threshold:
 [[5634 2168]
  [ 959 1239]]
 ```
+### Model 3: LightGBM
+LightGBM confusion matrix at 0.5:
+[[7672  130]
+ [2019  179]]
 
 ---
 
@@ -452,7 +458,6 @@ Main limitations:
 - The model uses a random train-test split instead of a time-based validation split.
 - The model is trained on US Lending Club data and may not transfer directly to another country or bank.
 - Model performance is moderate and not production-ready.
-- Hyperparameter tuning was limited.
 - Calibration was not deeply evaluated.
 - The explanation layer is simplified.
 - The Streamlit app uses simple query handling instead of a full natural language system.
